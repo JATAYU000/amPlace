@@ -31,12 +31,26 @@ export default function Home() {
   const handleClick = (pixel: Pixel, event: React.MouseEvent) => {
     setTooltip(`X: ${pixel.x}, Y: ${pixel.y}, User: ${pixel.user}`);
     setSelectedPixel(pixel);
-    
+
     const rect = event.currentTarget.getBoundingClientRect();
-    setTooltipPosition({ 
-      x: rect.left + (pixel.x * pixelSize) + (pixelSize / 2),
-      y: rect.top + (pixel.y * pixelSize) + pixelSize
-    });
+    let newX = rect.left + (pixelSize / 2);
+    let newY = rect.top + pixelSize;
+
+    const tooltipWidth = 100;
+    const tooltipHeight = 50;
+
+    if (newX + tooltipWidth / 2 > window.innerWidth) {
+      newX = window.innerWidth - tooltipWidth / 2 - 10;
+    } 
+    if (newX - tooltipWidth / 2 < 0) {
+      newX = tooltipWidth / 2 + 10;
+    }
+
+    if (newY + tooltipHeight > window.innerHeight) {
+      newY = rect.top - tooltipHeight - 10;
+    }
+
+    setTooltipPosition({ x: newX, y: newY });
   };
 
   const handleMouseMove = (event: React.MouseEvent) => {};
