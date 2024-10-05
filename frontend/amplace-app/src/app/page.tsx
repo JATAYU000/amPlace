@@ -10,15 +10,14 @@ export type Pixel = {
 };
 
 const gridSize = 100;
-const initialPixelSize = 8; // Initial pixel size
-const zoomFactor = 1.2; // Zoom factor
+const initialPixelSize = 8;
+const zoomFactor = 1.2;
 
-// Create a 100x100 grid of pixels, initialized with gray color and a user
 const pixels = Array.from({ length: gridSize }, (_, y) =>
   Array.from({ length: gridSize }, (_, x) => ({
     x,
     y,
-    rgb: 'gray', // Default color is gray
+    rgb: 'gray',
     user: 'JATAYU000'
   }))
 );
@@ -30,26 +29,22 @@ export default function Home() {
   const [selectedPixel, setSelectedPixel] = useState<Pixel | null>(null);
 
   const handleClick = (pixel: Pixel, event: React.MouseEvent) => {
-    // Set tooltip and selected pixel on click
     setTooltip(`X: ${pixel.x}, Y: ${pixel.y}, User: ${pixel.user}`);
     setSelectedPixel(pixel);
     
-    // Calculate tooltip position based on the clicked pixel's position
     const rect = event.currentTarget.getBoundingClientRect();
     setTooltipPosition({ 
-      x: rect.left + (pixel.x * pixelSize) + (pixelSize / 2), // Centered below the pixel
-      y: rect.top + (pixel.y * pixelSize) + pixelSize // Below the pixel
+      x: rect.left + (pixel.x * pixelSize) + (pixelSize / 2),
+      y: rect.top + (pixel.y * pixelSize) + pixelSize
     });
   };
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    // No need to set mouse position for the tooltip anymore
-  };
+  const handleMouseMove = (event: React.MouseEvent) => {};
 
   const handleScroll = (event: WheelEvent) => {
     event.preventDefault();
     let newSize = event.deltaY < 0 ? pixelSize * zoomFactor : pixelSize / zoomFactor;
-    newSize = Math.max(1, Math.min(20, newSize)); // Limit zoom between 1 and 20
+    newSize = Math.max(1, Math.min(20, newSize));
     setPixelSize(newSize);
   };
 
@@ -61,7 +56,6 @@ export default function Home() {
     }
   };
 
-  // Set up mouse wheel event listener
   useEffect(() => {
     window.addEventListener('wheel', handleScroll);
     document.addEventListener('click', handleClickOutside);
@@ -81,7 +75,7 @@ export default function Home() {
       position: 'relative' 
     }}>
       <div 
-        className="pixel-grid" // Add class for outside click detection
+        className="pixel-grid"
         style={{ 
           display: 'grid', 
           gridTemplateColumns: `repeat(${gridSize}, ${pixelSize}px)` 
@@ -96,10 +90,10 @@ export default function Home() {
               height: pixelSize,
               backgroundColor: pixel.rgb,
               border: selectedPixel?.x === pixel.x && selectedPixel?.y === pixel.y
-                ? '2px solid black' // Highlight border on click
+                ? '2px solid black'
                 : pixelSize > 1.5 ? '1px solid #ccc' : 'none',
             }}
-            onClick={(event) => handleClick(pixel, event)} // Trigger click event
+            onClick={(event) => handleClick(pixel, event)}
           />
         ))}
       </div>
@@ -109,12 +103,12 @@ export default function Home() {
             position: 'absolute',
             top: tooltipPosition.y,
             left: tooltipPosition.x,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Transparent gray background
-            color: 'black', // Black text
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            color: 'black',
             padding: '5px',
             borderRadius: '3px',
             zIndex: 1000,
-            transform: 'translate(-50%, 0)' // Center the tooltip horizontally
+            transform: 'translate(-50%, 0)'
           }}
         >
           <div className="text-xl">{tooltip}</div>
