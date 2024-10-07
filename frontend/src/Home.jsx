@@ -7,15 +7,14 @@ const Home = () => {
     const [highlightedPixel, setHighlightedPixel] = useState(null);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState({});
+    const overlayPositionRef = useRef({ top: 0, left: 0 }); // Use ref to track the canvas position
 
-    const cols = 120;
-    const rows = 60;
+    const cols = 150;
+    const rows = 80;
     const boxSize = 10;
 
-    // Define the list of usernames
     const users = ['JATAYU000', 'Drone944', 'Evergreen'];
 
-    // Create pixel_db with default values
     const generatePixelDB = () => {
         const pixel_db = [];
         let x = 0;
@@ -23,13 +22,12 @@ const Home = () => {
 
         while (y < rows) {
             while (x < cols) {
-                const hexColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-                // Randomly select a user from the users array
+                const hexColor = '#ffffff';
                 const user = users[Math.floor(Math.random() * users.length)];
                 pixel_db.push({ x, y, hex: hexColor, user });
                 x++;
             }
-            x = 0; // Reset x after each row
+            x = 0;
             y++;
         }
 
@@ -38,10 +36,9 @@ const Home = () => {
 
     const [pixel_db, setPixelDB] = useState(generatePixelDB);
 
-    // Function to calculate the leaderboard data
     const calculateLeaderboardData = () => {
         const userPixelCount = pixel_db.reduce((acc, pixel) => {
-            acc[pixel.user] = (acc[pixel.user] || 0) + 1; // Increment pixel count for each user
+            acc[pixel.user] = (acc[pixel.user] || 0) + 1;
             return acc;
         }, {});
         setLeaderboardData(userPixelCount);
@@ -72,10 +69,8 @@ const Home = () => {
 
             drawGrid(overlayCtx);
 
-            // Dragging logic
             let isDragging = false;
             let startX, startY;
-            let overlayPosition = { top: 0, left: 0 };
 
             const handleMouseDown = (event) => {
                 isDragging = true;
@@ -88,19 +83,22 @@ const Home = () => {
                     const dx = event.clientX - startX;
                     const dy = event.clientY - startY;
 
-                    overlayPosition.top += dy;
-                    overlayPosition.left += dx;
-
-                    overlayCanvas.style.top = `${overlayPosition.top}px`;
-                    overlayCanvas.style.left = `${overlayPosition.left}px`;
-
-                    startX = event.clientX;
-                    startY = event.clientY;
+                    // Update overlay position visually without changing the state
+                    overlayCanvas.style.top = `${overlayPositionRef.current.top + dy}px`;
+                    overlayCanvas.style.left = `${overlayPositionRef.current.left + dx}px`;
                 }
             };
 
-            const handleMouseUp = () => {
-                isDragging = false;
+            const handleMouseUp = (event) => {
+                if (isDragging) {
+                    isDragging = false;
+
+                    // Update the state with the final position after dragging
+                    const newTop = parseFloat(overlayCanvas.style.top) || 0;
+                    const newLeft = parseFloat(overlayCanvas.style.left) || 0;
+
+                    overlayPositionRef.current = { top: newTop, left: newLeft };
+                }
             };
 
             const handleMouseLeave = () => {
@@ -139,32 +137,35 @@ const Home = () => {
             };
         }
 
-        // Calculate leaderboard data when pixel_db changes
         calculateLeaderboardData();
-    }, [pixel_db, highlightedPixel]); 
+    }, [pixel_db, highlightedPixel]); // Removed overlayPosition dependency
 
-    // Set up interval to update leaderboard every 5 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            calculateLeaderboardData(); // Update leaderboard data
+            calculateLeaderboardData();
         }, 5000);
 
-        return () => clearInterval(interval); // Clean up the interval on unmount
-    }, [pixel_db]); // Only run when pixel_db changes
+        return () => clearInterval(interval);
+    }, [pixel_db]);
 
     return (
         <div style={{ position: 'relative', width: '1200px', height: '600px' }}>
             <canvas
                 ref={mainCanvasRef}
-                width={1200}
-                height={600}
+                width={1500}
+                height={800}
                 style={{ position: 'absolute' }}
             />
             <canvas
                 ref={overlayCanvasRef}
-                width={1200}
-                height={600}
-                style={{ border: '1px solid black', position: 'absolute', top: '0', left: '0' }}
+                width={1500}
+                height={800}
+                style={{
+                    border: '1px solid black',
+                    position: 'absolute',
+                    top: `${overlayPositionRef.current.top}px`, // Initial position from ref
+                    left: `${overlayPositionRef.current.left}px`, // Initial position from ref
+                }}
             />
             <div
                 style={{
